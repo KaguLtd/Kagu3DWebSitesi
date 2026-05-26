@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { MessageCircle } from "lucide-react";
 import { motion } from "framer-motion";
 import { callouts, type Callout } from "../data/callouts";
@@ -18,6 +18,15 @@ const MOBILE_CARD_HEIGHT = 54;
 const MOBILE_CARD_MIN_WIDTH = 132;
 const MOBILE_CARD_MAX_WIDTH = 178;
 const MOBILE_ACTIVE_CARD_MAX_HEIGHT = 390;
+const MOBILE_CALLOUT_ORDER = [
+  "air-conditioning",
+  "heat-pump",
+  "heating",
+  "solar",
+  "ventilation",
+  "water-systems",
+  "about",
+];
 const WHATSAPP_URL =
   "https://wa.me/905488485248?text=Merhaba%2C%20Kagu%20Ltd.%27den%20teklif%20almak%20istiyorum.";
 const DESIGN_VIEWPORT = {
@@ -46,8 +55,10 @@ export function CalloutOverlay({
     viewport,
   });
   const [connectorPaths, setConnectorPaths] = useState<ConnectorPath[]>([]);
-  const projectedById = new Map(
-    projectedCallouts.map((projection) => [projection.id, projection]),
+  const projectedById = useMemo(
+    () =>
+      new Map(projectedCallouts.map((projection) => [projection.id, projection])),
+    [projectedCallouts],
   );
   const isMobile = viewport.width < MOBILE_BREAKPOINT;
 
@@ -82,6 +93,11 @@ export function CalloutOverlay({
   }, [viewport.width, viewport.height]);
 
   useEffect(() => {
+    if (isMobile) {
+      setConnectorPaths([]);
+      return;
+    }
+
     let frame = 0;
     let lastKey = "";
 
@@ -154,7 +170,16 @@ export function CalloutOverlay({
     return () => {
       cancelAnimationFrame(frame);
     };
-  }, []);
+  }, [isMobile]);
+
+  if (isMobile) {
+    return (
+      <MobileCalloutGrid
+        activeCalloutId={activeCalloutId}
+        onActiveCalloutChange={onActiveCalloutChange}
+      />
+    );
+  }
 
   return (
     <div
@@ -287,6 +312,137 @@ export function CalloutOverlay({
         );
       })}
     </div>
+  );
+}
+
+function MobileCalloutGrid({
+  activeCalloutId,
+  onActiveCalloutChange,
+}: Pick<CalloutOverlayProps, "activeCalloutId" | "onActiveCalloutChange">) {
+  const orderedCallouts = getMobileOrderedCallouts();
+  const activeCallout =
+    orderedCallouts.find((callout) => callout.id === activeCalloutId) ?? null;
+
+  return (
+    <div
+      className="absolute inset-0 z-30 overflow-hidden px-3 pb-4 pt-[82px]"
+      onClick={() => {
+        if (activeCalloutId) {
+          onActiveCalloutChange(null);
+        }
+      }}
+    >
+      <div className="grid h-full content-center grid-cols-2 gap-3">
+        {orderedCallouts.map((callout, index) => {
+          const isActive = activeCalloutId === callout.id;
+          const isDimmed = activeCalloutId !== null && !isActive;
+          const isCentered = index === orderedCallouts.length - 1;
+
+          return (
+            <motion.button
+              key={callout.id}
+              type="button"
+              initial={false}
+              animate={{
+                opacity: isDimmed ? 0.46 : 1,
+                scale: isActive ? 1.02 : 1,
+              }}
+              transition={{ duration: 0.16, ease: "easeOut" }}
+              onClick={(event) => {
+                event.stopPropagation();
+                onActiveCalloutChange(isActive ? null : callout.id);
+              }}
+              className={`flex h-[72px] w-full items-center justify-center rounded-lg border border-white/16 bg-[linear-gradient(145deg,rgba(3,12,22,0.9),rgba(1,4,10,0.78))] px-3 text-center shadow-[0_12px_30px_rgba(0,0,0,0.42),0_0_24px_rgba(34,211,238,0.08)] backdrop-blur-xl transition-[border-color,background-color,box-shadow,filter] duration-150 focus-visible:border-[#c36a1a]/70 focus-visible:outline-none ${
+                isActive
+                  ? "border-[#c36a1a]/60 bg-slate-950/95 shadow-[0_18px_42px_rgba(0,0,0,0.48),0_0_30px_rgba(195,106,26,0.13)]"
+                  : "hover:border-[#c36a1a]/55 hover:bg-slate-950/90"
+              } ${isCentered ? "col-span-2 mx-auto max-w-[calc((100%_-_0.75rem)/2)]" : ""}`}
+              aria-pressed={isActive}
+            >
+              <span
+                className="max-w-full rounded-md bg-white/[0.03] px-2 py-0.5 text-center text-[12px] font-semibold leading-4 tracking-[0.01em] text-[#a9652c] shadow-[0_0_14px_rgba(255,255,255,0.055),0_0_20px_rgba(195,106,26,0.055)]"
+                style={{
+                  display: "-webkit-box",
+                  overflow: "hidden",
+                  WebkitBoxOrient: "vertical",
+                  WebkitLineClamp: 2,
+                }}
+              >
+                {callout.title}
+              </span>
+            </motion.button>
+          );
+        })}
+      </div>
+
+      {activeCallout ? (
+        <MobileActivePanel
+          callout={activeCallout}
+          onClose={() => onActiveCalloutChange(null)}
+        />
+      ) : null}
+    </div>
+  );
+}
+
+function MobileActivePanel({
+  callout,
+  onClose,
+}: {
+  callout: Callout;
+  onClose: () => void;
+}) {
+  return (
+    <motion.div
+      className="absolute inset-0 z-50 flex items-center justify-center bg-black/42 px-4 backdrop-blur-[2px]"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.14, ease: "easeOut" }}
+      onClick={onClose}
+    >
+      <motion.div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={`mobile-callout-${callout.id}`}
+        className="flex max-h-[62dvh] w-full max-w-[360px] flex-col overflow-hidden rounded-lg border border-white/26 bg-[radial-gradient(circle_at_50%_0%,rgba(18,58,68,0.58),rgba(2,8,18,0.98)_48%,rgba(0,0,0,0.98)_100%)] p-5 text-left shadow-[0_22px_64px_rgba(0,0,0,0.62),0_0_40px_rgba(34,211,238,0.14)] ring-1 ring-cyan-200/16"
+        initial={{ opacity: 0, scale: 0.96, y: 8 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        transition={{ duration: 0.16, ease: "easeOut" }}
+        onClick={(event) => event.stopPropagation()}
+      >
+        <span className="mx-auto mb-4 block h-px w-16 bg-gradient-to-r from-transparent via-[#a9652c]/70 to-transparent" />
+        <h2
+          id={`mobile-callout-${callout.id}`}
+          className="mx-auto max-w-full rounded-md bg-white/[0.035] px-2 py-0.5 text-center text-[17px] font-semibold leading-6 tracking-[0.01em] text-[#b06a32] shadow-[0_0_18px_rgba(255,255,255,0.06),0_0_26px_rgba(195,106,26,0.07)]"
+        >
+          {callout.title}
+        </h2>
+        <div className="mt-3 min-h-0 flex-1 overflow-y-auto pr-2 text-[13px] leading-5 text-cyan-50/72">
+          {callout.description}
+        </div>
+        <a
+          className="mt-4 inline-flex w-full items-center justify-center gap-3 rounded-lg border border-emerald-300/40 bg-emerald-400/14 px-4 py-3 text-sm font-semibold text-emerald-100 transition hover:border-emerald-200/75 hover:bg-emerald-400/22"
+          href={WHATSAPP_URL}
+          onClick={(event) => {
+            event.stopPropagation();
+          }}
+          rel="noreferrer"
+          target="_blank"
+        >
+          <MessageCircle className="h-5 w-5" aria-hidden="true" />
+          Şimdi Teklif Al
+        </a>
+      </motion.div>
+    </motion.div>
+  );
+}
+
+function getMobileOrderedCallouts() {
+  const byId = new Map(callouts.map((callout) => [callout.id, callout]));
+
+  return MOBILE_CALLOUT_ORDER.map((id) => byId.get(id)).filter(
+    (callout): callout is Callout => callout !== undefined,
   );
 }
 
