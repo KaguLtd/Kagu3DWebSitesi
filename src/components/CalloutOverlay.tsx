@@ -322,8 +322,8 @@ function CalloutCard({
       }}
       className={`pointer-events-auto absolute flex flex-col overflow-hidden rounded-lg border text-left outline-none backdrop-blur-xl transition-[border-color,background-color,box-shadow,filter] duration-200 focus-visible:border-cyan-200/70 ${
         isActive
-          ? "z-50 border-cyan-100/55 bg-[radial-gradient(circle_at_50%_0%,rgba(15,38,46,0.6),rgba(2,6,12,0.99)_48%,rgba(0,0,0,1)_100%)] p-7 shadow-[0_18px_55px_rgba(0,0,0,0.46)] ring-1 ring-cyan-200/18"
-          : `z-30 border-cyan-200/14 bg-[linear-gradient(145deg,rgba(2,6,12,0.94),rgba(1,4,8,0.9))] p-5 shadow-[0_10px_28px_rgba(0,0,0,0.34)] hover:border-cyan-200/28 hover:bg-slate-950/95 ${
+          ? "z-50 border-cyan-100/45 bg-[radial-gradient(circle_at_50%_0%,rgba(18,58,68,0.5),rgba(2,8,18,0.98)_48%,rgba(0,0,0,0.98)_100%)] p-7 shadow-[0_24px_70px_rgba(0,0,0,0.56),0_0_44px_rgba(34,211,238,0.12)] ring-1 ring-cyan-200/16"
+          : `z-30 border-cyan-100/16 bg-[linear-gradient(145deg,rgba(3,12,22,0.86),rgba(1,4,10,0.8))] p-5 shadow-[0_14px_38px_rgba(0,0,0,0.42),0_0_26px_rgba(34,211,238,0.06)] hover:border-cyan-100/30 hover:bg-slate-950/90 hover:shadow-[0_16px_44px_rgba(0,0,0,0.48),0_0_32px_rgba(34,211,238,0.1)] ${
               isDimmed ? "brightness-75 saturate-75" : ""
             }`
       }`}
@@ -337,8 +337,8 @@ function CalloutCard({
           animate={{ opacity: 1 }}
           transition={{ delay: 0.22, duration: 0.2, ease: "easeOut" }}
         >
-          <span className="mb-4 block h-px w-14 bg-gradient-to-r from-kagu-cyan to-transparent" />
-          <span className="block text-xl font-semibold leading-7 text-cyan-50">
+          <span className="mx-auto mb-4 block h-px w-16 bg-gradient-to-r from-transparent via-[#a9652c]/70 to-transparent" />
+          <span className="block text-center font-sans text-[21px] font-semibold leading-7 tracking-[0.01em] text-[#b06a32] drop-shadow-[0_0_12px_rgba(176,106,50,0.16)]">
             {callout.title}
           </span>
           <span className="mt-2.5 block min-h-0 flex-1 overflow-y-auto pr-2 text-sm leading-6 text-cyan-50/68">
@@ -359,8 +359,8 @@ function CalloutCard({
         </motion.div>
       ) : (
         <>
-          <span className="mb-4 block h-px w-14 bg-gradient-to-r from-kagu-cyan to-transparent" />
-          <span className="block text-base font-semibold leading-6 text-cyan-50">
+          <span className="mx-auto mb-4 block h-px w-14 bg-gradient-to-r from-transparent via-[#a9652c]/65 to-transparent" />
+          <span className="block text-center font-sans text-[15px] font-semibold leading-6 tracking-[0.01em] text-[#a9652c] drop-shadow-[0_0_10px_rgba(169,101,44,0.13)]">
             {callout.title}
           </span>
           <span className="mt-2.5 block max-h-[72px] overflow-hidden text-sm leading-6 text-cyan-50/68">

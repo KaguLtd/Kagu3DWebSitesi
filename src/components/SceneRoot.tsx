@@ -50,6 +50,7 @@ export function SceneRoot({
 
   return (
     <div className="relative h-full w-full overflow-hidden">
+      <div className="pointer-events-none absolute left-1/2 top-1/2 z-0 h-[34vh] w-[min(78vw,920px)] -translate-x-1/2 -translate-y-[38%] rounded-[50%] bg-[radial-gradient(ellipse_at_center,rgba(103,232,249,0.2),rgba(14,116,144,0.11)_36%,transparent_72%)] blur-2xl" />
       <Canvas
         className="relative z-10 h-full w-full cursor-grab active:cursor-grabbing"
         dpr={[1, 1.8]}

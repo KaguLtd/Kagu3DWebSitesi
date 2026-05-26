@@ -15,7 +15,7 @@ export const callouts: Callout[] = [
     id: "about",
     title: "Hakkımızda",
     description:
-      "Kagu Ltd., 2022 yılında Yasin Höke ve Ahmet Can Gültekin ortaklığında kurulmuş; KKTC genelinde iklimlendirme, ısıtma, havalandırma ve mekanik taahhüt alanlarında hizmet veren dinamik bir teknik çözüm firmasıdır. Kendi bünyesindeki çevik ekibi, yüksek saha refleksi ve işi sonuçlandırma disipliniyle, sektörde fark yaratan, geleceğe dönük ve güvenilir çözümler üretmeyi hedefler.",
+      "Firmamız 2022 yılından bu yana KKTC genelinde iklimlendirme, ısıtma, havalandırma ve mekanik taahhüt alanlarında faaliyet gösteren dinamik bir teknik çözüm firmasıdır. Uzman kadrosu, hızlı reaksiyon kabiliyeti ve sahada sonuç odaklı çalışma disipliniyle; konut, ticari alan ve proje bazlı uygulamalarda güvenilir, sürdürülebilir ve yüksek kaliteli mühendislik çözümleri sunar.",
     localAnchor: [0.35, -0.44, 2.44],
     preferredSide: "left",
     screenOffset: [-411, 260],
