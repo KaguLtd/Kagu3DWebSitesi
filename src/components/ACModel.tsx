@@ -259,6 +259,8 @@ function LoadedACModel({
     if (anchorGroup.current && onProjectedCalloutsChange) {
       anchorGroup.current.updateWorldMatrix(true, false);
       const canvasRect = gl.domElement.getBoundingClientRect();
+      const currentPitch = interactionGroup.current.rotation.x;
+      const currentYaw = interactionGroup.current.rotation.y;
       const projectedCallouts = callouts.map((callout) => {
         const projected = projectLocalPointToScreen(
           callout.localAnchor,
@@ -269,15 +271,17 @@ function LoadedACModel({
 
         return {
           id: callout.id,
+          pitch: Number(currentPitch.toFixed(4)),
           x: Math.round(projected.x),
           y: Math.round(projected.y),
           visible: projected.visible,
+          yaw: Number(currentYaw.toFixed(4)),
         };
       });
       const projectedKey = projectedCallouts
         .map(
           (callout) =>
-            `${callout.id}:${callout.x}:${callout.y}:${callout.visible}`,
+            `${callout.id}:${callout.x}:${callout.y}:${callout.visible}:${callout.pitch}:${callout.yaw}`,
         )
         .join("|");
 

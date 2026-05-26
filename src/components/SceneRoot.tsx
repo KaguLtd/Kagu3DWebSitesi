@@ -50,7 +50,6 @@ export function SceneRoot({
 
   return (
     <div className="relative h-full w-full overflow-hidden">
-      <div className="absolute left-1/2 top-1/2 h-[min(58vw,58vh)] w-[min(88vw,980px)] -translate-x-1/2 -translate-y-1/2 rounded-full bg-cyan-300/10 blur-3xl" />
       <Canvas
         className="relative z-10 h-full w-full cursor-grab active:cursor-grabbing"
         dpr={[1, 1.8]}
@@ -94,7 +93,6 @@ export function SceneRoot({
           Showing placeholder AC.
         </div>
       ) : null}
-      <div className="pointer-events-none absolute bottom-8 left-1/2 z-20 h-px w-[min(68vw,720px)] -translate-x-1/2 bg-gradient-to-r from-transparent via-cyan-200/35 to-transparent" />
     </div>
   );
 }

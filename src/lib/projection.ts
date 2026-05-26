@@ -2,9 +2,11 @@ import { Camera, Matrix4, Vector3 } from "three";
 
 export type ProjectedCallout = {
   id: string;
+  pitch: number;
   x: number;
   y: number;
   visible: boolean;
+  yaw: number;
 };
 
 const reusableWorldPoint = new Vector3();

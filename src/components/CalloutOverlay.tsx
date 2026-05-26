@@ -32,17 +32,111 @@ export function CalloutOverlay({
   projectedCallouts,
 }: CalloutOverlayProps) {
   const viewport = useViewportSize();
+  const overlayRef = useRef<HTMLDivElement | null>(null);
+  const cardRefs = useRef<Map<string, HTMLDivElement>>(new Map());
   const lockedOffsets = useRef<Map<string, ScreenPoint>>(new Map());
+  const latestState = useRef({
+    activeCalloutId,
+    projectedCallouts,
+    viewport,
+  });
+  const [connectorPaths, setConnectorPaths] = useState<ConnectorPath[]>([]);
   const projectedById = new Map(
     projectedCallouts.map((projection) => [projection.id, projection]),
   );
 
   useEffect(() => {
+    latestState.current = {
+      activeCalloutId,
+      projectedCallouts,
+      viewport,
+    };
+  }, [activeCalloutId, projectedCallouts, viewport]);
+
+  useEffect(() => {
     lockedOffsets.current.clear();
   }, [viewport.width, viewport.height]);
 
+  useEffect(() => {
+    let frame = 0;
+    let lastKey = "";
+
+    const measure = () => {
+      const overlay = overlayRef.current;
+      if (!overlay) {
+        frame = requestAnimationFrame(measure);
+        return;
+      }
+
+      const overlayRect = overlay.getBoundingClientRect();
+      const { activeCalloutId: activeId, projectedCallouts: projections } =
+        latestState.current;
+      const projectedByCalloutId = new Map(
+        projections.map((projection) => [projection.id, projection]),
+      );
+
+      const nextPaths = callouts
+        .map((callout) => {
+          const projection = projectedByCalloutId.get(callout.id);
+          const card = cardRefs.current.get(callout.id);
+
+          if (!projection?.visible || !card) {
+            return null;
+          }
+
+          const cardRect = card.getBoundingClientRect();
+          const cardPosition = {
+            x: cardRect.left - overlayRect.left,
+            y: cardRect.top - overlayRect.top,
+          };
+          const cardDimensions = {
+            width: cardRect.width,
+            height: cardRect.height,
+          };
+          const lineEnd = getLineEnd(callout, cardPosition, cardDimensions);
+          const connectorPath = getConnectorPath(projection, lineEnd);
+
+          return {
+            d: connectorPath,
+            id: callout.id,
+            isActive: activeId === callout.id,
+            lineEnd,
+            projection,
+          };
+        })
+        .filter((path): path is ConnectorPath => path !== null);
+
+      const nextKey = nextPaths
+        .map(
+          (path) =>
+            `${path.id}:${Math.round(path.projection.x)}:${Math.round(
+              path.projection.y,
+            )}:${Math.round(path.lineEnd.x)}:${Math.round(path.lineEnd.y)}:${
+              path.isActive
+            }`,
+        )
+        .join("|");
+
+      if (nextKey !== lastKey) {
+        lastKey = nextKey;
+        setConnectorPaths(nextPaths);
+      }
+
+      frame = requestAnimationFrame(measure);
+    };
+
+    frame = requestAnimationFrame(measure);
+
+    return () => {
+      cancelAnimationFrame(frame);
+    };
+  }, []);
+
   return (
-    <div className="pointer-events-none absolute inset-0 z-30 overflow-hidden">
+    <div
+      ref={overlayRef}
+      className="pointer-events-none absolute inset-0 z-30 overflow-hidden"
+    >
       <svg className="absolute inset-0 h-full w-full" aria-hidden="true">
         <defs>
           <filter
@@ -81,34 +175,18 @@ export function CalloutOverlay({
             <path d="M 0 1 L 8 5 L 0 9 z" fill="rgba(180, 246, 255, 0.96)" />
           </marker>
         </defs>
-        {callouts.map((callout, index) => {
-          const projection = projectedById.get(callout.id);
-          if (!projection?.visible) {
-            return null;
-          }
-
-          const isActive = activeCalloutId === callout.id;
+        {connectorPaths.map((connector) => {
+          const isActive = connector.isActive;
           const hasActive = activeCalloutId !== null;
-          const cardPosition = getCardPosition(
-            callout,
-            projection,
-            index,
-            viewport,
-            lockedOffsets.current,
-            isActive,
-          );
-          const cardDimensions = getCardDimensions(viewport, isActive);
-          const lineEnd = getLineEnd(callout, cardPosition, cardDimensions);
-          const connectorPath = getConnectorPath(projection, lineEnd);
 
           return (
             <g
-              key={callout.id}
+              key={connector.id}
               opacity={hasActive && !isActive ? 0.58 : 1}
               filter={isActive ? "url(#callout-line-glow)" : undefined}
             >
               <path
-                d={connectorPath}
+                d={connector.d}
                 fill="none"
                 markerEnd={isActive ? "url(#callout-arrow-active)" : "url(#callout-arrow)"}
                 stroke={
@@ -122,8 +200,8 @@ export function CalloutOverlay({
                 vectorEffect="non-scaling-stroke"
               />
               <circle
-                cx={lineEnd.x}
-                cy={lineEnd.y}
+                cx={connector.lineEnd.x}
+                cy={connector.lineEnd.y}
                 r={isActive ? 2.8 : 2}
                 fill={
                   isActive
@@ -132,8 +210,8 @@ export function CalloutOverlay({
                 }
               />
               <circle
-                cx={projection.x}
-                cy={projection.y}
+                cx={connector.projection.x}
+                cy={connector.projection.y}
                 r={isActive ? 4.5 : 3.2}
                 fill="rgba(78, 231, 255, 0.72)"
               />
@@ -165,6 +243,15 @@ export function CalloutOverlay({
             callout={callout}
             dimensions={cardDimensions}
             position={cardPosition}
+            projection={projection}
+            viewport={viewport}
+            registerRef={(element) => {
+              if (element) {
+                cardRefs.current.set(callout.id, element);
+              } else {
+                cardRefs.current.delete(callout.id);
+              }
+            }}
             isActive={isActive}
             isDimmed={hasActive && !isActive}
             onClick={() => onActiveCalloutChange(isActive ? null : callout.id)}
@@ -179,6 +266,9 @@ type CalloutCardProps = {
   callout: Callout;
   dimensions: CardDimensions;
   position: ScreenPoint;
+  projection: ProjectedCallout;
+  registerRef: (element: HTMLDivElement | null) => void;
+  viewport: ViewportSize;
   isActive: boolean;
   isDimmed: boolean;
   onClick: () => void;
@@ -188,12 +278,18 @@ function CalloutCard({
   callout,
   dimensions,
   position,
+  projection,
+  registerRef,
+  viewport,
   isActive,
   isDimmed,
   onClick,
 }: CalloutCardProps) {
+  const tilt = getCardTilt(projection, viewport, isActive);
+
   return (
     <motion.div
+      ref={registerRef}
       role="button"
       tabIndex={0}
       initial={false}
@@ -201,8 +297,14 @@ function CalloutCard({
         height: dimensions.height,
         left: position.x,
         opacity: 1,
-        scale: 1,
+        rotateX: tilt.rotateX,
+        rotateY: tilt.rotateY,
+        rotateZ: tilt.rotateZ,
+        scale: isActive ? 1 : tilt.scale,
+        scaleX: tilt.scaleX,
+        skewY: tilt.skewY,
         top: position.y,
+        transformPerspective: 950,
         width: dimensions.width,
       }}
       transition={{
@@ -220,11 +322,12 @@ function CalloutCard({
       }}
       className={`pointer-events-auto absolute flex flex-col overflow-hidden rounded-lg border text-left outline-none backdrop-blur-xl transition-[border-color,background-color,box-shadow,filter] duration-200 focus-visible:border-cyan-200/70 ${
         isActive
-          ? "z-50 border-cyan-100/55 bg-[radial-gradient(circle_at_50%_0%,rgba(15,38,46,0.42),rgba(2,6,12,0.98)_48%,rgba(0,0,0,0.99)_100%)] p-7 shadow-[0_18px_55px_rgba(0,0,0,0.46)] ring-1 ring-cyan-200/18"
-          : `z-30 border-cyan-200/14 bg-slate-950/58 p-5 shadow-[0_10px_28px_rgba(0,0,0,0.34)] hover:border-cyan-200/28 hover:bg-slate-950/70 ${
+          ? "z-50 border-cyan-100/55 bg-[radial-gradient(circle_at_50%_0%,rgba(15,38,46,0.6),rgba(2,6,12,0.99)_48%,rgba(0,0,0,1)_100%)] p-7 shadow-[0_18px_55px_rgba(0,0,0,0.46)] ring-1 ring-cyan-200/18"
+          : `z-30 border-cyan-200/14 bg-[linear-gradient(145deg,rgba(2,6,12,0.94),rgba(1,4,8,0.9))] p-5 shadow-[0_10px_28px_rgba(0,0,0,0.34)] hover:border-cyan-200/28 hover:bg-slate-950/95 ${
               isDimmed ? "brightness-75 saturate-75" : ""
             }`
       }`}
+      style={{ transformStyle: "preserve-3d" }}
       aria-pressed={isActive}
     >
       {isActive ? (
@@ -242,7 +345,7 @@ function CalloutCard({
             {callout.description}
           </span>
           <a
-            className="mt-5 inline-flex w-fit items-center gap-2 rounded-lg border border-emerald-300/35 bg-emerald-400/12 px-4 py-3 text-sm font-semibold text-emerald-100 transition hover:border-emerald-200/70 hover:bg-emerald-400/20"
+            className="mx-auto mt-6 inline-flex w-fit items-center gap-3 rounded-lg border border-emerald-300/40 bg-emerald-400/14 px-6 py-3.5 text-base font-semibold text-emerald-100 transition hover:border-emerald-200/75 hover:bg-emerald-400/22"
             href={WHATSAPP_URL}
             onClick={(event) => {
               event.stopPropagation();
@@ -250,7 +353,7 @@ function CalloutCard({
             rel="noreferrer"
             target="_blank"
           >
-            <MessageCircle className="h-4 w-4" aria-hidden="true" />
+            <MessageCircle className="h-5 w-5" aria-hidden="true" />
             Şimdi Teklif Al
           </a>
         </motion.div>
@@ -272,6 +375,14 @@ function CalloutCard({
 type ScreenPoint = {
   x: number;
   y: number;
+};
+
+type ConnectorPath = {
+  d: string;
+  id: string;
+  isActive: boolean;
+  lineEnd: ScreenPoint;
+  projection: ProjectedCallout;
 };
 
 type ViewportSize = {
@@ -407,6 +518,33 @@ function getConnectorPath(start: ScreenPoint, end: ScreenPoint) {
 
 function clamp(value: number, min: number, max: number) {
   return Math.min(Math.max(value, min), max);
+}
+
+function getCardTilt(
+  projection: ProjectedCallout,
+  viewport: ViewportSize,
+  isActive: boolean,
+) {
+  if (isActive) {
+    return { rotateX: 0, rotateY: 0, rotateZ: 0, scale: 1, scaleX: 1, skewY: 0 };
+  }
+
+  const centerOffsetX = (projection.x - viewport.width / 2) / viewport.width;
+  const yawDegrees = radiansToDegrees(projection.yaw);
+  const pitchDegrees = radiansToDegrees(projection.pitch);
+
+  return {
+    rotateX: clamp(-pitchDegrees * 0.3, -3.4, 3.4),
+    rotateY: clamp(yawDegrees * 0.32 + centerOffsetX * 0.5, -6, 6),
+    rotateZ: clamp(-yawDegrees * 0.04 + pitchDegrees * 0.025, -1, 1),
+    scale: 1 + Math.abs(yawDegrees) * 0.0005,
+    scaleX: 1 - Math.abs(yawDegrees) * 0.0008,
+    skewY: clamp(yawDegrees * 0.025, -0.75, 0.75),
+  };
+}
+
+function radiansToDegrees(value: number) {
+  return (value * 180) / Math.PI;
 }
 
 type CardDimensions = {
