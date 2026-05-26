@@ -23,9 +23,9 @@ function App() {
           initial={{ opacity: 0, y: -8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: "easeOut" }}
-          className="rounded-lg border border-cyan-100/16 bg-[linear-gradient(145deg,rgba(3,12,22,0.82),rgba(1,4,10,0.72))] px-5 py-4 shadow-[0_16px_44px_rgba(0,0,0,0.34),0_0_30px_rgba(34,211,238,0.06)] backdrop-blur-xl"
+          className="rounded-lg border border-white/16 bg-[linear-gradient(145deg,rgba(3,12,22,0.82),rgba(1,4,10,0.72))] px-4 py-3 shadow-[0_16px_44px_rgba(0,0,0,0.34),0_0_30px_rgba(34,211,238,0.06)] backdrop-blur-xl transition hover:border-[#c36a1a]/45 sm:px-5 sm:py-4"
         >
-          <div className="font-horizon text-[32px] font-bold uppercase leading-none tracking-[0.08em] text-[#c36a1a] drop-shadow-[0_0_10px_rgba(195,106,26,0.16)] sm:text-[40px]">
+          <div className="font-horizon text-[26px] font-bold uppercase leading-none tracking-[0.08em] text-[#c36a1a] drop-shadow-[0_0_10px_rgba(195,106,26,0.16)] sm:text-[34px]">
             KAGU LTD.
           </div>
         </motion.div>
@@ -38,14 +38,14 @@ function App() {
         >
           <a
             href="tel:+905488485248"
-            className="inline-flex h-11 items-center gap-2 rounded-lg border border-cyan-100/16 bg-[linear-gradient(145deg,rgba(3,12,22,0.82),rgba(1,4,10,0.72))] px-3.5 text-xs font-medium text-[#c36a1a] shadow-[0_14px_36px_rgba(0,0,0,0.3),0_0_24px_rgba(34,211,238,0.05)] backdrop-blur-xl transition hover:border-[#c36a1a]/45"
+            className="inline-flex h-11 items-center gap-2 rounded-lg border border-white/16 bg-[linear-gradient(145deg,rgba(3,12,22,0.82),rgba(1,4,10,0.72))] px-3.5 text-xs font-medium text-[#c36a1a] shadow-[0_14px_36px_rgba(0,0,0,0.3),0_0_24px_rgba(34,211,238,0.05)] backdrop-blur-xl transition hover:border-[#c36a1a]/45"
           >
             <Phone className="h-4 w-4 text-[#c36a1a]" aria-hidden="true" />
             <span className="hidden sm:inline">+90 548 848 52 48</span>
           </a>
           <a
             href="mailto:info@kagultd.com?cc=kagultdcy@gmail.com"
-            className="inline-flex h-11 items-center gap-2 rounded-lg border border-cyan-100/16 bg-[linear-gradient(145deg,rgba(3,12,22,0.82),rgba(1,4,10,0.72))] px-3.5 text-xs font-medium text-[#c36a1a] shadow-[0_14px_36px_rgba(0,0,0,0.3),0_0_24px_rgba(34,211,238,0.05)] backdrop-blur-xl transition hover:border-[#c36a1a]/45"
+            className="inline-flex h-11 items-center gap-2 rounded-lg border border-white/16 bg-[linear-gradient(145deg,rgba(3,12,22,0.82),rgba(1,4,10,0.72))] px-3.5 text-xs font-medium text-[#c36a1a] shadow-[0_14px_36px_rgba(0,0,0,0.3),0_0_24px_rgba(34,211,238,0.05)] backdrop-blur-xl transition hover:border-[#c36a1a]/45"
           >
             <Mail className="h-4 w-4 text-[#c36a1a]" aria-hidden="true" />
             <span className="hidden md:inline">info@kagultd.com</span>

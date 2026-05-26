@@ -317,13 +317,13 @@ function CalloutCard({
 }: CalloutCardProps) {
   const tilt = getCardTilt(projection, viewport, isActive, isMobile);
   const activeCardClass = isMobile
-    ? "z-50 border-cyan-400/48 bg-[radial-gradient(circle_at_50%_0%,rgba(18,58,68,0.58),rgba(2,8,18,0.98)_48%,rgba(0,0,0,0.98)_100%)] p-5 shadow-[0_22px_64px_rgba(0,0,0,0.62),0_0_40px_rgba(34,211,238,0.14)] ring-1 ring-cyan-200/16 hover:border-white/70"
-    : "z-50 border-cyan-400/48 bg-[radial-gradient(circle_at_50%_0%,rgba(18,58,68,0.5),rgba(2,8,18,0.98)_48%,rgba(0,0,0,0.98)_100%)] p-7 shadow-[0_24px_70px_rgba(0,0,0,0.56),0_0_44px_rgba(34,211,238,0.12)] ring-1 ring-cyan-200/16 hover:border-white/70";
+    ? "z-50 border-white/26 bg-[radial-gradient(circle_at_50%_0%,rgba(18,58,68,0.58),rgba(2,8,18,0.98)_48%,rgba(0,0,0,0.98)_100%)] p-5 shadow-[0_22px_64px_rgba(0,0,0,0.62),0_0_40px_rgba(34,211,238,0.14)] ring-1 ring-cyan-200/16 hover:border-[#c36a1a]/60"
+    : "z-50 border-white/26 bg-[radial-gradient(circle_at_50%_0%,rgba(18,58,68,0.5),rgba(2,8,18,0.98)_48%,rgba(0,0,0,0.98)_100%)] p-7 shadow-[0_24px_70px_rgba(0,0,0,0.56),0_0_44px_rgba(34,211,238,0.12)] ring-1 ring-cyan-200/16 hover:border-[#c36a1a]/60";
   const inactiveCardClass = isMobile
-    ? `z-30 justify-center border-cyan-400/36 bg-[linear-gradient(145deg,rgba(3,12,22,0.88),rgba(1,4,10,0.78))] px-3 py-2 shadow-[0_12px_30px_rgba(0,0,0,0.42),0_0_24px_rgba(34,211,238,0.08)] hover:border-white/70 hover:bg-slate-950/90 ${
+    ? `z-30 justify-center border-white/16 bg-[linear-gradient(145deg,rgba(3,12,22,0.88),rgba(1,4,10,0.78))] px-3 py-2 shadow-[0_12px_30px_rgba(0,0,0,0.42),0_0_24px_rgba(34,211,238,0.08)] hover:border-[#c36a1a]/55 hover:bg-slate-950/90 ${
         isDimmed ? "brightness-75 saturate-75" : ""
       }`
-    : `z-30 border-cyan-400/34 bg-[linear-gradient(145deg,rgba(3,12,22,0.86),rgba(1,4,10,0.8))] p-5 shadow-[0_14px_38px_rgba(0,0,0,0.42),0_0_26px_rgba(34,211,238,0.06)] hover:border-white/70 hover:bg-slate-950/90 hover:shadow-[0_16px_44px_rgba(0,0,0,0.48),0_0_32px_rgba(34,211,238,0.1)] ${
+    : `z-30 border-white/16 bg-[linear-gradient(145deg,rgba(3,12,22,0.86),rgba(1,4,10,0.8))] p-5 shadow-[0_14px_38px_rgba(0,0,0,0.42),0_0_26px_rgba(34,211,238,0.06)] hover:border-[#c36a1a]/55 hover:bg-slate-950/90 hover:shadow-[0_16px_44px_rgba(0,0,0,0.48),0_0_32px_rgba(195,106,26,0.12)] ${
         isDimmed ? "brightness-75 saturate-75" : ""
       }`;
 
@@ -360,7 +360,7 @@ function CalloutCard({
           onClick();
         }
       }}
-      className={`pointer-events-auto absolute flex flex-col overflow-hidden rounded-lg border text-left outline-none backdrop-blur-xl transition-[border-color,background-color,box-shadow,filter] duration-200 focus-visible:border-white/80 ${
+      className={`group pointer-events-auto absolute flex flex-col overflow-hidden rounded-lg border text-left outline-none backdrop-blur-xl transition-[border-color,background-color,box-shadow,filter] duration-200 focus-visible:border-[#c36a1a]/70 ${
         isActive ? activeCardClass : inactiveCardClass
       }`}
       style={{ transformStyle: "preserve-3d" }}
@@ -375,7 +375,7 @@ function CalloutCard({
         >
           <span className="mx-auto mb-4 block h-px w-16 bg-gradient-to-r from-transparent via-[#a9652c]/70 to-transparent" />
           <span
-            className={`block text-center font-sans font-semibold tracking-[0.01em] text-[#b06a32] drop-shadow-[0_0_12px_rgba(176,106,50,0.16)] ${
+            className={`mx-auto block max-w-full rounded-md bg-white/[0.035] px-2 py-0.5 text-center font-sans font-semibold tracking-[0.01em] text-[#b06a32] shadow-[0_0_18px_rgba(255,255,255,0.06),0_0_26px_rgba(195,106,26,0.07)] drop-shadow-[0_0_12px_rgba(176,106,50,0.16)] transition-[background-color,box-shadow] duration-200 group-hover:bg-white/[0.055] group-hover:shadow-[0_0_24px_rgba(255,255,255,0.1),0_0_34px_rgba(195,106,26,0.16)] ${
               isMobile ? "text-[17px] leading-6" : "text-[21px] leading-7"
             }`}
           >
@@ -413,7 +413,7 @@ function CalloutCard({
             }`}
           />
           <span
-            className={`block text-center font-sans font-semibold tracking-[0.01em] text-[#a9652c] drop-shadow-[0_0_10px_rgba(169,101,44,0.13)] ${
+            className={`mx-auto max-w-full rounded-md bg-white/[0.03] px-2 py-0.5 text-center font-sans font-semibold tracking-[0.01em] text-[#a9652c] shadow-[0_0_14px_rgba(255,255,255,0.055),0_0_20px_rgba(195,106,26,0.055)] drop-shadow-[0_0_10px_rgba(169,101,44,0.13)] transition-[background-color,box-shadow] duration-200 group-hover:bg-white/[0.05] group-hover:shadow-[0_0_22px_rgba(255,255,255,0.09),0_0_30px_rgba(195,106,26,0.14)] ${
               isMobile
                 ? "text-[11px] leading-[15px]"
                 : "text-[15px] leading-6"
