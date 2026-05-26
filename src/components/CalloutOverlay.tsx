@@ -13,6 +13,11 @@ const MIN_CARD_HEIGHT = 108;
 const EDGE_MARGIN = 16;
 const SIDE_OFFSET = 104;
 const STACK_GAP = 24;
+const MOBILE_BREAKPOINT = 768;
+const MOBILE_CARD_HEIGHT = 54;
+const MOBILE_CARD_MIN_WIDTH = 132;
+const MOBILE_CARD_MAX_WIDTH = 178;
+const MOBILE_ACTIVE_CARD_MAX_HEIGHT = 390;
 const WHATSAPP_URL =
   "https://wa.me/905488485248?text=Merhaba%2C%20Kagu%20Ltd.%27den%20teklif%20almak%20istiyorum.";
 const DESIGN_VIEWPORT = {
@@ -44,6 +49,7 @@ export function CalloutOverlay({
   const projectedById = new Map(
     projectedCallouts.map((projection) => [projection.id, projection]),
   );
+  const isMobile = viewport.width < MOBILE_BREAKPOINT;
 
   useEffect(() => {
     latestState.current = {
@@ -52,6 +58,24 @@ export function CalloutOverlay({
       viewport,
     };
   }, [activeCalloutId, projectedCallouts, viewport]);
+
+  useEffect(() => {
+    if (!activeCalloutId) {
+      return;
+    }
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        onActiveCalloutChange(null);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [activeCalloutId, onActiveCalloutChange]);
 
   useEffect(() => {
     lockedOffsets.current.clear();
@@ -182,7 +206,7 @@ export function CalloutOverlay({
           return (
             <g
               key={connector.id}
-              opacity={hasActive && !isActive ? 0.58 : 1}
+              opacity={hasActive && !isActive ? 0.48 : isMobile ? 0.7 : 1}
               filter={isActive ? "url(#callout-line-glow)" : undefined}
             >
               <path
@@ -192,17 +216,19 @@ export function CalloutOverlay({
                 stroke={
                   isActive
                     ? "rgba(150, 242, 255, 0.72)"
-                    : "rgba(78, 231, 255, 0.28)"
+                    : isMobile
+                      ? "rgba(78, 231, 255, 0.2)"
+                      : "rgba(78, 231, 255, 0.28)"
                 }
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                strokeWidth={isActive ? 1.45 : 0.9}
+                strokeWidth={isActive ? (isMobile ? 1.15 : 1.45) : isMobile ? 0.72 : 0.9}
                 vectorEffect="non-scaling-stroke"
               />
               <circle
                 cx={connector.lineEnd.x}
                 cy={connector.lineEnd.y}
-                r={isActive ? 2.8 : 2}
+                r={isActive ? (isMobile ? 2.3 : 2.8) : isMobile ? 1.5 : 2}
                 fill={
                   isActive
                     ? "rgba(180, 246, 255, 0.78)"
@@ -212,7 +238,7 @@ export function CalloutOverlay({
               <circle
                 cx={connector.projection.x}
                 cy={connector.projection.y}
-                r={isActive ? 4.5 : 3.2}
+                r={isActive ? (isMobile ? 3.8 : 4.5) : isMobile ? 2.5 : 3.2}
                 fill="rgba(78, 231, 255, 0.72)"
               />
             </g>
@@ -234,8 +260,9 @@ export function CalloutOverlay({
           viewport,
           lockedOffsets.current,
           isActive,
+          isMobile,
         );
-        const cardDimensions = getCardDimensions(viewport, isActive);
+        const cardDimensions = getCardDimensions(viewport, isActive, isMobile);
 
         return (
           <CalloutCard
@@ -245,6 +272,7 @@ export function CalloutOverlay({
             position={cardPosition}
             projection={projection}
             viewport={viewport}
+            isMobile={isMobile}
             registerRef={(element) => {
               if (element) {
                 cardRefs.current.set(callout.id, element);
@@ -269,6 +297,7 @@ type CalloutCardProps = {
   projection: ProjectedCallout;
   registerRef: (element: HTMLDivElement | null) => void;
   viewport: ViewportSize;
+  isMobile: boolean;
   isActive: boolean;
   isDimmed: boolean;
   onClick: () => void;
@@ -281,11 +310,22 @@ function CalloutCard({
   projection,
   registerRef,
   viewport,
+  isMobile,
   isActive,
   isDimmed,
   onClick,
 }: CalloutCardProps) {
-  const tilt = getCardTilt(projection, viewport, isActive);
+  const tilt = getCardTilt(projection, viewport, isActive, isMobile);
+  const activeCardClass = isMobile
+    ? "z-50 border-cyan-400/48 bg-[radial-gradient(circle_at_50%_0%,rgba(18,58,68,0.58),rgba(2,8,18,0.98)_48%,rgba(0,0,0,0.98)_100%)] p-5 shadow-[0_22px_64px_rgba(0,0,0,0.62),0_0_40px_rgba(34,211,238,0.14)] ring-1 ring-cyan-200/16 hover:border-white/70"
+    : "z-50 border-cyan-400/48 bg-[radial-gradient(circle_at_50%_0%,rgba(18,58,68,0.5),rgba(2,8,18,0.98)_48%,rgba(0,0,0,0.98)_100%)] p-7 shadow-[0_24px_70px_rgba(0,0,0,0.56),0_0_44px_rgba(34,211,238,0.12)] ring-1 ring-cyan-200/16 hover:border-white/70";
+  const inactiveCardClass = isMobile
+    ? `z-30 justify-center border-cyan-400/36 bg-[linear-gradient(145deg,rgba(3,12,22,0.88),rgba(1,4,10,0.78))] px-3 py-2 shadow-[0_12px_30px_rgba(0,0,0,0.42),0_0_24px_rgba(34,211,238,0.08)] hover:border-white/70 hover:bg-slate-950/90 ${
+        isDimmed ? "brightness-75 saturate-75" : ""
+      }`
+    : `z-30 border-cyan-400/34 bg-[linear-gradient(145deg,rgba(3,12,22,0.86),rgba(1,4,10,0.8))] p-5 shadow-[0_14px_38px_rgba(0,0,0,0.42),0_0_26px_rgba(34,211,238,0.06)] hover:border-white/70 hover:bg-slate-950/90 hover:shadow-[0_16px_44px_rgba(0,0,0,0.48),0_0_32px_rgba(34,211,238,0.1)] ${
+        isDimmed ? "brightness-75 saturate-75" : ""
+      }`;
 
   return (
     <motion.div
@@ -320,12 +360,8 @@ function CalloutCard({
           onClick();
         }
       }}
-      className={`pointer-events-auto absolute flex flex-col overflow-hidden rounded-lg border text-left outline-none backdrop-blur-xl transition-[border-color,background-color,box-shadow,filter] duration-200 focus-visible:border-cyan-200/70 ${
-        isActive
-          ? "z-50 border-cyan-100/45 bg-[radial-gradient(circle_at_50%_0%,rgba(18,58,68,0.5),rgba(2,8,18,0.98)_48%,rgba(0,0,0,0.98)_100%)] p-7 shadow-[0_24px_70px_rgba(0,0,0,0.56),0_0_44px_rgba(34,211,238,0.12)] ring-1 ring-cyan-200/16"
-          : `z-30 border-cyan-100/16 bg-[linear-gradient(145deg,rgba(3,12,22,0.86),rgba(1,4,10,0.8))] p-5 shadow-[0_14px_38px_rgba(0,0,0,0.42),0_0_26px_rgba(34,211,238,0.06)] hover:border-cyan-100/30 hover:bg-slate-950/90 hover:shadow-[0_16px_44px_rgba(0,0,0,0.48),0_0_32px_rgba(34,211,238,0.1)] ${
-              isDimmed ? "brightness-75 saturate-75" : ""
-            }`
+      className={`pointer-events-auto absolute flex flex-col overflow-hidden rounded-lg border text-left outline-none backdrop-blur-xl transition-[border-color,background-color,box-shadow,filter] duration-200 focus-visible:border-white/80 ${
+        isActive ? activeCardClass : inactiveCardClass
       }`}
       style={{ transformStyle: "preserve-3d" }}
       aria-pressed={isActive}
@@ -338,14 +374,26 @@ function CalloutCard({
           transition={{ delay: 0.22, duration: 0.2, ease: "easeOut" }}
         >
           <span className="mx-auto mb-4 block h-px w-16 bg-gradient-to-r from-transparent via-[#a9652c]/70 to-transparent" />
-          <span className="block text-center font-sans text-[21px] font-semibold leading-7 tracking-[0.01em] text-[#b06a32] drop-shadow-[0_0_12px_rgba(176,106,50,0.16)]">
+          <span
+            className={`block text-center font-sans font-semibold tracking-[0.01em] text-[#b06a32] drop-shadow-[0_0_12px_rgba(176,106,50,0.16)] ${
+              isMobile ? "text-[17px] leading-6" : "text-[21px] leading-7"
+            }`}
+          >
             {callout.title}
           </span>
-          <span className="mt-2.5 block min-h-0 flex-1 overflow-y-auto pr-2 text-sm leading-6 text-cyan-50/68">
+          <span
+            className={`mt-2.5 block min-h-0 flex-1 overflow-y-auto pr-2 text-cyan-50/68 ${
+              isMobile ? "text-[13px] leading-5" : "text-sm leading-6"
+            }`}
+          >
             {callout.description}
           </span>
           <a
-            className="mx-auto mt-6 inline-flex w-fit items-center gap-3 rounded-lg border border-emerald-300/40 bg-emerald-400/14 px-6 py-3.5 text-base font-semibold text-emerald-100 transition hover:border-emerald-200/75 hover:bg-emerald-400/22"
+            className={`mx-auto inline-flex items-center justify-center gap-3 rounded-lg border border-emerald-300/40 bg-emerald-400/14 font-semibold text-emerald-100 transition hover:border-emerald-200/75 hover:bg-emerald-400/22 ${
+              isMobile
+                ? "mt-4 w-full px-4 py-3 text-sm"
+                : "mt-6 w-fit px-6 py-3.5 text-base"
+            }`}
             href={WHATSAPP_URL}
             onClick={(event) => {
               event.stopPropagation();
@@ -359,13 +407,39 @@ function CalloutCard({
         </motion.div>
       ) : (
         <>
-          <span className="mx-auto mb-4 block h-px w-14 bg-gradient-to-r from-transparent via-[#a9652c]/65 to-transparent" />
-          <span className="block text-center font-sans text-[15px] font-semibold leading-6 tracking-[0.01em] text-[#a9652c] drop-shadow-[0_0_10px_rgba(169,101,44,0.13)]">
+          <span
+            className={`mx-auto block h-px bg-gradient-to-r from-transparent via-[#a9652c]/65 to-transparent ${
+              isMobile ? "mb-2 w-10" : "mb-4 w-14"
+            }`}
+          />
+          <span
+            className={`block text-center font-sans font-semibold tracking-[0.01em] text-[#a9652c] drop-shadow-[0_0_10px_rgba(169,101,44,0.13)] ${
+              isMobile
+                ? "text-[11px] leading-[15px]"
+                : "text-[15px] leading-6"
+            }`}
+            style={{
+              display: "-webkit-box",
+              overflow: "hidden",
+              WebkitBoxOrient: "vertical",
+              WebkitLineClamp: 2,
+            }}
+          >
             {callout.title}
           </span>
-          <span className="mt-2.5 block max-h-[72px] overflow-hidden text-sm leading-6 text-cyan-50/68">
-            {callout.description}
-          </span>
+          {isMobile ? null : (
+            <span
+              className="mt-2.5 text-sm leading-6 text-cyan-50/68"
+              style={{
+                display: "-webkit-box",
+                overflow: "hidden",
+                WebkitBoxOrient: "vertical",
+                WebkitLineClamp: 3,
+              }}
+            >
+              {callout.description}
+            </span>
+          )}
         </>
       )}
     </motion.div>
@@ -421,12 +495,14 @@ function getCardPosition(
   viewport: ViewportSize,
   lockedOffsets: Map<string, ScreenPoint>,
   isActive: boolean,
+  isMobile: boolean,
 ): ScreenPoint {
   const stackOffset = (index % 3) * STACK_GAP - STACK_GAP;
   const narrow = viewport.width < 720;
   const { width: cardWidth, height: cardHeight } = getCardDimensions(
     viewport,
     isActive,
+    isMobile,
   );
   const scaleX = viewport.width / DESIGN_VIEWPORT.width;
   const scaleY = viewport.height / DESIGN_VIEWPORT.height;
@@ -434,9 +510,14 @@ function getCardPosition(
   let x = projection.x - cardWidth / 2;
   let y = projection.y - cardHeight / 2;
 
-  if (isActive) {
+  if (isActive && isMobile) {
+    x = viewport.width / 2 - cardWidth / 2;
+    y = viewport.height - cardHeight - 18;
+  } else if (isActive) {
     x = viewport.width / 2 - cardWidth / 2;
     y = viewport.height / 2 - cardHeight / 2 + 12;
+  } else if (isMobile) {
+    return getMobileCardPosition(index, viewport, cardWidth, cardHeight);
   } else if (callout.screenPosition) {
     let offset = lockedOffsets.get(callout.id);
 
@@ -482,6 +563,36 @@ function getCardPosition(
   };
 }
 
+function getMobileCardPosition(
+  index: number,
+  viewport: ViewportSize,
+  cardWidth: number,
+  cardHeight: number,
+): ScreenPoint {
+  const edge = 12;
+  const top = Math.max(92, viewport.height * 0.13);
+  const centerY = viewport.height * 0.5;
+  const lowerY = viewport.height - 92;
+  const left = edge;
+  const right = viewport.width - cardWidth - edge;
+  const centerX = viewport.width / 2 - cardWidth / 2;
+  const mobileSlots: ScreenPoint[] = [
+    { x: left, y: top },
+    { x: right, y: top + 6 },
+    { x: left, y: centerY - cardHeight - 34 },
+    { x: right, y: centerY - cardHeight - 16 },
+    { x: left, y: centerY + 36 },
+    { x: right, y: centerY + 54 },
+    { x: centerX, y: lowerY },
+  ];
+  const slot = mobileSlots[index % mobileSlots.length];
+
+  return {
+    x: clamp(slot.x, edge, viewport.width - cardWidth - edge),
+    y: clamp(slot.y, top, viewport.height - cardHeight - edge),
+  };
+}
+
 function getLineEnd(
   callout: Callout,
   position: ScreenPoint,
@@ -524,8 +635,9 @@ function getCardTilt(
   projection: ProjectedCallout,
   viewport: ViewportSize,
   isActive: boolean,
+  isMobile: boolean,
 ) {
-  if (isActive) {
+  if (isActive || isMobile) {
     return { rotateX: 0, rotateY: 0, rotateZ: 0, scale: 1, scaleX: 1, skewY: 0 };
   }
 
@@ -555,7 +667,30 @@ type CardDimensions = {
 function getCardDimensions(
   viewport: ViewportSize,
   isActive = false,
+  isMobile = false,
 ): CardDimensions {
+  if (isMobile && isActive) {
+    return {
+      width: Math.max(MIN_CARD_WIDTH, viewport.width - EDGE_MARGIN * 2),
+      height: clamp(
+        Math.min(MOBILE_ACTIVE_CARD_MAX_HEIGHT, viewport.height * 0.52),
+        260,
+        viewport.height - 132,
+      ),
+    };
+  }
+
+  if (isMobile) {
+    return {
+      width: clamp(
+        viewport.width * 0.41,
+        MOBILE_CARD_MIN_WIDTH,
+        Math.min(MOBILE_CARD_MAX_WIDTH, viewport.width - EDGE_MARGIN * 2),
+      ),
+      height: MOBILE_CARD_HEIGHT,
+    };
+  }
+
   if (isActive) {
     return {
       width: clamp(
