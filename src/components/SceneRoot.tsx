@@ -1,11 +1,6 @@
-import { Suspense, useCallback, useEffect, useState } from "react";
+import { Suspense, useLayoutEffect } from "react";
 import { Canvas, useThree } from "@react-three/fiber";
-import {
-  ContactShadows,
-  Environment,
-  Float,
-  OrthographicCamera,
-} from "@react-three/drei";
+import { ContactShadows, Float, OrthographicCamera } from "@react-three/drei";
 import { MathUtils } from "three";
 import { ACModel } from "./ACModel";
 import type { ProjectedCallout } from "../lib/projection";
@@ -18,7 +13,7 @@ function ResponsiveCamera() {
     168,
   );
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if ("zoom" in camera) {
       camera.zoom = zoom;
       camera.updateProjectionMatrix();
@@ -37,17 +32,6 @@ export function SceneRoot({
   onProjectedCalloutsChange,
   onSceneBackgroundClick,
 }: SceneRootProps) {
-  const [modelStatus, setModelStatus] = useState<"loaded" | "missing" | "checking">(
-    "checking",
-  );
-
-  const handleModelStatusChange = useCallback(
-    (status: "loaded" | "missing") => {
-      setModelStatus(status);
-    },
-    [],
-  );
-
   return (
     <div className="relative h-full w-full overflow-hidden">
       <div className="pointer-events-none absolute left-1/2 top-1/2 z-0 h-[34vh] w-[min(78vw,920px)] -translate-x-1/2 -translate-y-[38%] rounded-[50%] bg-[radial-gradient(ellipse_at_center,rgba(103,232,249,0.2),rgba(14,116,144,0.11)_36%,transparent_72%)] blur-2xl" />
@@ -73,7 +57,6 @@ export function SceneRoot({
         <Float floatIntensity={0.16} rotationIntensity={0} speed={1.15}>
           <Suspense fallback={<ACModelFallback />}>
             <ACModel
-              onModelStatusChange={handleModelStatusChange}
               onProjectedCalloutsChange={onProjectedCalloutsChange}
             />
           </Suspense>
@@ -86,14 +69,7 @@ export function SceneRoot({
           far={2.4}
           color="#0ea5c6"
         />
-        <Environment preset="city" />
       </Canvas>
-      {modelStatus === "missing" ? (
-        <div className="pointer-events-none absolute bottom-12 left-1/2 z-30 w-[min(88vw,420px)] -translate-x-1/2 rounded-lg border border-cyan-200/15 bg-slate-950/55 px-4 py-3 text-center text-xs text-cyan-50/70 shadow-glow backdrop-blur-xl">
-          Developer warning: model not found at public/models/split-ac-indoor.glb.
-          Showing placeholder AC.
-        </div>
-      ) : null}
     </div>
   );
 }

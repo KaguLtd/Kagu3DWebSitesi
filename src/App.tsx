@@ -1,14 +1,9 @@
-import { lazy, Suspense, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Mail, Phone } from "lucide-react";
 import { motion } from "framer-motion";
 import { CalloutOverlay } from "./components/CalloutOverlay";
+import { SceneRoot } from "./components/SceneRoot";
 import type { ProjectedCallout } from "./lib/projection";
-
-const SceneRoot = lazy(() =>
-  import("./components/SceneRoot").then((module) => ({
-    default: module.SceneRoot,
-  })),
-);
 
 function App() {
   const [activeCalloutId, setActiveCalloutId] = useState<string | null>(null);
@@ -61,12 +56,10 @@ function App() {
 
       {isMobile ? null : (
         <section className="absolute inset-0 z-10 flex items-center justify-center overflow-hidden px-4">
-          <Suspense fallback={<SceneLoadingFallback />}>
-            <SceneRoot
-              onProjectedCalloutsChange={setProjectedCallouts}
-              onSceneBackgroundClick={() => setActiveCalloutId(null)}
-            />
-          </Suspense>
+          <SceneRoot
+            onProjectedCalloutsChange={setProjectedCallouts}
+            onSceneBackgroundClick={() => setActiveCalloutId(null)}
+          />
         </section>
       )}
       <CalloutOverlay
@@ -79,21 +72,6 @@ function App() {
 }
 
 export default App;
-
-function SceneLoadingFallback() {
-  return (
-    <div className="relative h-full w-full overflow-hidden">
-      <div className="pointer-events-none absolute left-1/2 top-1/2 h-[30vh] w-[min(74vw,820px)] -translate-x-1/2 -translate-y-[38%] rounded-[50%] bg-[radial-gradient(ellipse_at_center,rgba(103,232,249,0.16),rgba(14,116,144,0.08)_42%,transparent_74%)] blur-2xl" />
-      <div className="absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-3 text-center">
-        <div className="h-px w-28 bg-gradient-to-r from-transparent via-cyan-200/70 to-transparent" />
-        <div className="rounded-lg border border-white/14 bg-slate-950/45 px-5 py-3 text-xs font-medium uppercase tracking-[0.18em] text-cyan-100/72 shadow-[0_18px_54px_rgba(0,0,0,0.42),0_0_28px_rgba(34,211,238,0.08)] backdrop-blur-xl">
-          3D sahne yukleniyor
-        </div>
-        <div className="h-px w-16 bg-gradient-to-r from-transparent via-[#c36a1a]/70 to-transparent" />
-      </div>
-    </div>
-  );
-}
 
 function useIsMobile() {
   const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);

@@ -27,7 +27,6 @@ const DRAG_SENSITIVITY = 0.0042;
 const BASE_MODEL_Y_ROTATION = -Math.PI / 2;
 
 type ACModelProps = {
-  onModelStatusChange?: (status: "loaded" | "missing") => void;
   onProjectedCalloutsChange?: (positions: ProjectedCallout[]) => void;
 };
 
@@ -150,62 +149,17 @@ function useHorizonFontReady() {
   return ready;
 }
 
-function useModelAssetExists() {
-  const [exists, setExists] = useState<boolean | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    fetch(MODEL_URL, { method: "HEAD" })
-      .then((response) => {
-        if (!cancelled) {
-          setExists(response.ok);
-        }
-      })
-      .catch(() => {
-        if (!cancelled) {
-          setExists(false);
-        }
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  return exists;
-}
-
 export function ACModel({
-  onModelStatusChange,
   onProjectedCalloutsChange,
 }: ACModelProps) {
-  const assetExists = useModelAssetExists();
-
-  useEffect(() => {
-    if (assetExists === false) {
-      onModelStatusChange?.("missing");
-    }
-  }, [assetExists, onModelStatusChange]);
-
-  if (assetExists === null) {
-    return <PlaceholderAC subtle />;
-  }
-
-  if (!assetExists) {
-    return <PlaceholderAC />;
-  }
-
   return (
     <LoadedACModel
-      onModelStatusChange={onModelStatusChange}
       onProjectedCalloutsChange={onProjectedCalloutsChange}
     />
   );
 }
 
 function LoadedACModel({
-  onModelStatusChange,
   onProjectedCalloutsChange,
 }: ACModelProps) {
   const { scene } = useGLTF(MODEL_URL);
@@ -233,10 +187,6 @@ function LoadedACModel({
 
     return { model, center, scale };
   }, [horizonFontReady, scene]);
-
-  useEffect(() => {
-    onModelStatusChange?.("loaded");
-  }, [onModelStatusChange]);
 
   useFrame(({ camera, gl }, delta) => {
     if (!interactionGroup.current) {
@@ -361,30 +311,4 @@ function LoadedACModel({
   );
 }
 
-function PlaceholderAC({ subtle = false }: { subtle?: boolean }) {
-  return (
-    <group>
-      <mesh castShadow receiveShadow>
-        <boxGeometry args={[5.4, 1.12, 0.76]} />
-        <meshStandardMaterial
-          color={subtle ? "#cfe9f3" : "#e8f7fb"}
-          roughness={0.36}
-          metalness={0.08}
-        />
-      </mesh>
-      <mesh position={[0, -0.2, 0.42]} castShadow>
-        <boxGeometry args={[4.7, 0.12, 0.08]} />
-        <meshStandardMaterial
-          color="#9fd8e8"
-          emissive="#10394a"
-          emissiveIntensity={0.32}
-          roughness={0.28}
-        />
-      </mesh>
-      <mesh position={[0, -0.5, 0.19]} castShadow>
-        <boxGeometry args={[4.45, 0.16, 0.2]} />
-        <meshStandardMaterial color="#d3ecf4" roughness={0.4} />
-      </mesh>
-    </group>
-  );
-}
+useGLTF.preload(MODEL_URL);
