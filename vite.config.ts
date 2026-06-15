@@ -5,9 +5,27 @@ export default defineConfig({
   plugins: [react()],
   build: {
     chunkSizeWarningLimit: 900,
+    modulePreload: {
+      resolveDependencies(_filename, dependencies, context) {
+        if (context.hostType !== "html") {
+          return dependencies;
+        }
+
+        return dependencies.filter(
+          (dependency) =>
+            !dependency.includes("three-core") &&
+            !dependency.includes("r3f-vendor") &&
+            !dependency.includes("SceneRoot"),
+        );
+      },
+    },
     rollupOptions: {
       output: {
         manualChunks(id) {
+          if (id.includes("vite/preload-helper")) {
+            return "vite-preload-helper";
+          }
+
           if (!id.includes("node_modules")) {
             return;
           }

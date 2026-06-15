@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ThreeEvent, useFrame } from "@react-three/fiber";
+import { ThreeEvent, useFrame, useThree } from "@react-three/fiber";
 import { Clone, useGLTF } from "@react-three/drei";
 import {
   Box3,
@@ -163,6 +163,7 @@ function LoadedACModel({
   onProjectedCalloutsChange,
 }: ACModelProps) {
   const { scene } = useGLTF(MODEL_URL);
+  const invalidate = useThree((state) => state.invalidate);
   const horizonFontReady = useHorizonFontReady();
   const interactionGroup = useRef<Group>(null);
   const modelGroup = useRef<Group>(null);
@@ -193,24 +194,36 @@ function LoadedACModel({
       return;
     }
 
+    const currentPitch = interactionGroup.current.rotation.x;
+    const currentYaw = interactionGroup.current.rotation.y;
     const damping = 1 - Math.exp(-delta * 12);
     interactionGroup.current.rotation.x = MathUtils.lerp(
-      interactionGroup.current.rotation.x,
+      currentPitch,
       targetRotation.current.pitch,
       damping,
     );
     interactionGroup.current.rotation.y = MathUtils.lerp(
-      interactionGroup.current.rotation.y,
+      currentYaw,
       targetRotation.current.yaw,
       damping,
     );
     interactionGroup.current.rotation.z = 0;
 
+    const isSettling =
+      Math.abs(interactionGroup.current.rotation.x - targetRotation.current.pitch) >
+        0.0001 ||
+      Math.abs(interactionGroup.current.rotation.y - targetRotation.current.yaw) >
+        0.0001;
+
+    if (dragState.current || isSettling) {
+      invalidate();
+    }
+
     if (anchorGroup.current && onProjectedCalloutsChange) {
       anchorGroup.current.updateWorldMatrix(true, false);
       const canvasRect = gl.domElement.getBoundingClientRect();
-      const currentPitch = interactionGroup.current.rotation.x;
-      const currentYaw = interactionGroup.current.rotation.y;
+      const projectedPitch = interactionGroup.current.rotation.x;
+      const projectedYaw = interactionGroup.current.rotation.y;
       const projectedCallouts = callouts.map((callout) => {
         const projected = projectLocalPointToScreen(
           callout.localAnchor,
@@ -221,11 +234,11 @@ function LoadedACModel({
 
         return {
           id: callout.id,
-          pitch: Number(currentPitch.toFixed(4)),
+          pitch: Number(projectedPitch.toFixed(4)),
           x: Math.round(projected.x),
           y: Math.round(projected.y),
           visible: projected.visible,
-          yaw: Number(currentYaw.toFixed(4)),
+          yaw: Number(projectedYaw.toFixed(4)),
         };
       });
       const projectedKey = projectedCallouts
@@ -253,6 +266,7 @@ function LoadedACModel({
       x: event.clientX,
       y: event.clientY,
     };
+    invalidate();
   };
 
   const handlePointerMove = (event: ThreeEvent<PointerEvent>) => {
@@ -271,6 +285,7 @@ function LoadedACModel({
       pitch: targetRotation.current.pitch + deltaY * DRAG_SENSITIVITY,
       yaw: targetRotation.current.yaw + deltaX * DRAG_SENSITIVITY,
     });
+    invalidate();
   };
 
   const handlePointerUp = (event: ThreeEvent<PointerEvent>) => {
@@ -281,6 +296,7 @@ function LoadedACModel({
         pointerTarget.releasePointerCapture(event.pointerId);
       }
       dragState.current = null;
+      invalidate();
     }
   };
 

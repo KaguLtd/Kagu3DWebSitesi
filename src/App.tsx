@@ -1,9 +1,21 @@
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { Mail, Phone } from "lucide-react";
 import { motion } from "framer-motion";
-import { CalloutOverlay } from "./components/CalloutOverlay";
-import { SceneRoot } from "./components/SceneRoot";
+import { MobileExperience } from "./components/mobile/MobileExperience";
+import { CONTACT } from "./data/contact";
 import type { ProjectedCallout } from "./lib/projection";
+
+const SceneRoot = lazy(() =>
+  import("./components/SceneRoot").then((module) => ({
+    default: module.SceneRoot,
+  })),
+);
+
+const CalloutOverlay = lazy(() =>
+  import("./components/CalloutOverlay").then((module) => ({
+    default: module.CalloutOverlay,
+  })),
+);
 
 function App() {
   const [activeCalloutId, setActiveCalloutId] = useState<string | null>(null);
@@ -38,35 +50,46 @@ function App() {
           className="flex max-w-[52vw] flex-wrap justify-end gap-2"
         >
           <a
-            href="tel:+905488485248"
+            href={CONTACT.phoneHref}
             className="inline-flex h-11 items-center gap-2 rounded-lg border border-white/16 bg-[linear-gradient(145deg,rgba(3,12,22,0.82),rgba(1,4,10,0.72))] px-3.5 text-xs font-medium text-[#c36a1a] shadow-[0_14px_36px_rgba(0,0,0,0.3),0_0_24px_rgba(34,211,238,0.05)] backdrop-blur-xl transition hover:border-[#c36a1a]/45"
           >
             <Phone className="h-4 w-4 text-[#c36a1a]" aria-hidden="true" />
-            <span className="hidden sm:inline">+90 548 848 52 48</span>
+            <span className="hidden sm:inline">{CONTACT.phoneDisplay}</span>
           </a>
           <a
-            href="mailto:info@kagultd.com?cc=kagultdcy@gmail.com"
+            href={`mailto:${CONTACT.email}?cc=kagultdcy@gmail.com`}
             className="inline-flex h-11 items-center gap-2 rounded-lg border border-white/16 bg-[linear-gradient(145deg,rgba(3,12,22,0.82),rgba(1,4,10,0.72))] px-3.5 text-xs font-medium text-[#c36a1a] shadow-[0_14px_36px_rgba(0,0,0,0.3),0_0_24px_rgba(34,211,238,0.05)] backdrop-blur-xl transition hover:border-[#c36a1a]/45"
           >
             <Mail className="h-4 w-4 text-[#c36a1a]" aria-hidden="true" />
-            <span className="hidden md:inline">info@kagultd.com</span>
+            <span className="hidden md:inline">{CONTACT.email}</span>
           </a>
         </motion.div>
       </header>
 
-      {isMobile ? null : (
-        <section className="absolute inset-0 z-10 flex items-center justify-center overflow-hidden px-4">
-          <SceneRoot
-            onProjectedCalloutsChange={setProjectedCallouts}
-            onSceneBackgroundClick={() => setActiveCalloutId(null)}
-          />
-        </section>
+      {isMobile ? (
+        <MobileExperience
+          activeCalloutId={activeCalloutId}
+          onActiveCalloutChange={setActiveCalloutId}
+        />
+      ) : (
+        <>
+          <section className="absolute inset-0 z-10 flex items-center justify-center overflow-hidden px-4">
+            <Suspense fallback={<DesktopSceneFallback />}>
+              <SceneRoot
+                onProjectedCalloutsChange={setProjectedCallouts}
+                onSceneBackgroundClick={() => setActiveCalloutId(null)}
+              />
+            </Suspense>
+          </section>
+          <Suspense fallback={null}>
+            <CalloutOverlay
+              activeCalloutId={activeCalloutId}
+              onActiveCalloutChange={setActiveCalloutId}
+              projectedCallouts={projectedCallouts}
+            />
+          </Suspense>
+        </>
       )}
-      <CalloutOverlay
-        activeCalloutId={activeCalloutId}
-        onActiveCalloutChange={setActiveCalloutId}
-        projectedCallouts={projectedCallouts}
-      />
     </main>
   );
 }
@@ -89,4 +112,13 @@ function useIsMobile() {
   }, []);
 
   return isMobile;
+}
+
+function DesktopSceneFallback() {
+  return (
+    <div
+      className="h-32 w-[min(72vw,760px)] animate-pulse rounded-[32px] border border-cyan-200/10 bg-cyan-300/[0.035] shadow-[0_0_80px_rgba(34,211,238,0.08)]"
+      aria-label="3D klima deneyimi yükleniyor"
+    />
+  );
 }

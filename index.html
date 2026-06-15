@@ -4,14 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#07111f" />
-    <link
-      rel="preload"
-      href="/models/split-ac-indoor.glb"
-      as="fetch"
-      type="model/gltf-binary"
-      crossorigin
-    />
-    <link rel="preload" href="/models/DAIKIN.JPG" as="image" />
+    <link rel="icon" href="/logo.png" type="image/png" />
     <link
       rel="preload"
       href="/fonts/Horizon.woff2"
@@ -21,43 +14,146 @@
     />
     <meta
       name="description"
-      content="Kagu Ltd. KKTC genelinde klima, havalandırma, ısıtma, solar enerji, arıtma, havuz ve pompa sistemleri için keşif, projelendirme, uygulama ve servis çözümleri sunar."
+      content="Kagu Ltd., KKTC genelinde klima, havalandırma, ısıtma ve mekanik sistemler için keşif, projelendirme, uygulama ve servis çözümleri sunar."
     />
     <link rel="canonical" href="https://kagultd.com/" />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://kagultd.com/" />
     <meta property="og:site_name" content="Kagu Ltd." />
-    <meta property="og:title" content="Kagu Ltd. | İklimlendirme ve Mekanik Çözümler" />
+    <meta
+      property="og:title"
+      content="KKTC Klima, Havalandırma ve Mekanik Sistemler | Kagu Ltd."
+    />
     <meta
       property="og:description"
-      content="Konut, ticari alan ve proje bazlı uygulamalar için güvenilir klima, havalandırma, ısıtma, solar enerji ve mekanik sistem çözümleri."
+      content="KKTC genelinde klima, havalandırma, ısıtma ve mekanik sistemler için keşif, uygulama ve servis çözümleri."
     />
-    <meta property="og:image" content="https://kagultd.com/models/DAIKIN.JPG" />
+    <meta property="og:image" content="https://kagultd.com/og-kagu-ltd.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta
+      property="og:image:alt"
+      content="Kagu Ltd. KKTC iklimlendirme ve mekanik sistem çözümleri"
+    />
     <meta property="og:locale" content="tr_TR" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Kagu Ltd. | İklimlendirme ve Mekanik Çözümler" />
+    <meta
+      name="twitter:title"
+      content="KKTC Klima, Havalandırma ve Mekanik Sistemler | Kagu Ltd."
+    />
     <meta
       name="twitter:description"
-      content="Konut, ticari alan ve proje bazlı uygulamalar için güvenilir klima, havalandırma, ısıtma, solar enerji ve mekanik sistem çözümleri."
+      content="KKTC genelinde klima, havalandırma, ısıtma ve mekanik sistemler için keşif, uygulama ve servis çözümleri."
     />
-    <meta name="twitter:image" content="https://kagultd.com/models/DAIKIN.JPG" />
+    <meta name="twitter:image" content="https://kagultd.com/og-kagu-ltd.jpg" />
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
-        "@type": "LocalBusiness",
-        "name": "Kagu Ltd.",
-        "url": "https://kagultd.com/",
-        "email": "info@kagultd.com",
-        "telephone": "+905488485248",
-        "image": "https://kagultd.com/models/DAIKIN.JPG",
-        "areaServed": {
-          "@type": "Place",
-          "name": "KKTC"
-        },
-        "description": "Kagu Ltd. klima, havalandırma, ısıtma, solar enerji, arıtma, havuz ve pompa sistemleri için keşif, projelendirme, uygulama ve servis çözümleri sunar."
+        "@graph": [
+          {
+            "@type": "WebSite",
+            "@id": "https://kagultd.com/#website",
+            "url": "https://kagultd.com/",
+            "name": "Kagu Ltd.",
+            "inLanguage": "tr",
+            "publisher": {
+              "@id": "https://kagultd.com/#business"
+            }
+          },
+          {
+            "@type": "HVACBusiness",
+            "@id": "https://kagultd.com/#business",
+            "name": "Kagu Ltd.",
+            "url": "https://kagultd.com/",
+            "description": "Kagu Ltd., KKTC genelinde klima, havalandırma, ısıtma ve mekanik sistemler için keşif, projelendirme, uygulama ve servis çözümleri sunar.",
+            "email": "info@kagultd.com",
+            "telephone": "+905488485248",
+            "logo": "https://kagultd.com/logo.png",
+            "image": "https://kagultd.com/og-kagu-ltd.jpg",
+            "address": {
+              "@type": "PostalAddress",
+              "streetAddress": "Atatürk Caddesi",
+              "addressLocality": "Gönyeli",
+              "addressRegion": "Lefkoşa",
+              "addressCountry": "KKTC"
+            },
+            "areaServed": {
+              "@type": "Place",
+              "name": "Kuzey Kıbrıs Türk Cumhuriyeti"
+            },
+            "sameAs": [
+              "https://www.facebook.com/kagultd",
+              "https://www.instagram.com/kagultd"
+            ],
+            "contactPoint": [
+              {
+                "@type": "ContactPoint",
+                "telephone": "+905488485248",
+                "contactType": "customer service",
+                "areaServed": "KKTC",
+                "availableLanguage": ["tr"]
+              },
+              {
+                "@type": "ContactPoint",
+                "email": "info@kagultd.com",
+                "contactType": "sales",
+                "areaServed": "KKTC",
+                "availableLanguage": ["tr"]
+              }
+            ],
+            "hasOfferCatalog": {
+              "@type": "OfferCatalog",
+              "name": "İklimlendirme ve Mekanik Sistem Hizmetleri",
+              "itemListElement": [
+                {
+                  "@type": "Offer",
+                  "itemOffered": {
+                    "@type": "Service",
+                    "name": "Klima Sistemleri"
+                  }
+                },
+                {
+                  "@type": "Offer",
+                  "itemOffered": {
+                    "@type": "Service",
+                    "name": "Havalandırma Sistemleri"
+                  }
+                },
+                {
+                  "@type": "Offer",
+                  "itemOffered": {
+                    "@type": "Service",
+                    "name": "Isıtma Sistemleri"
+                  }
+                },
+                {
+                  "@type": "Offer",
+                  "itemOffered": {
+                    "@type": "Service",
+                    "name": "Isı Pompası Sistemleri"
+                  }
+                },
+                {
+                  "@type": "Offer",
+                  "itemOffered": {
+                    "@type": "Service",
+                    "name": "Solar Enerji Sistemleri"
+                  }
+                },
+                {
+                  "@type": "Offer",
+                  "itemOffered": {
+                    "@type": "Service",
+                    "name": "Arıtma, Havuz ve Pompa Sistemleri"
+                  }
+                }
+              ]
+            }
+          }
+        ]
       }
     </script>
-    <title>Kagu Ltd. | İklimlendirme ve Mekanik Çözümler</title>
+    <title>KKTC Klima, Havalandırma ve Mekanik Sistemler | Kagu Ltd.</title>
   </head>
   <body>
     <div id="root"></div>

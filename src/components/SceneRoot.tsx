@@ -1,12 +1,12 @@
 import { Suspense, useLayoutEffect } from "react";
 import { Canvas, useThree } from "@react-three/fiber";
-import { ContactShadows, Float, OrthographicCamera } from "@react-three/drei";
+import { ContactShadows, OrthographicCamera } from "@react-three/drei";
 import { MathUtils } from "three";
 import { ACModel } from "./ACModel";
 import type { ProjectedCallout } from "../lib/projection";
 
 function ResponsiveCamera() {
-  const { size, camera } = useThree();
+  const { size, camera, invalidate } = useThree();
   const zoom = MathUtils.clamp(
     Math.min(size.width / 7.2, size.height / 4.4),
     72,
@@ -17,8 +17,9 @@ function ResponsiveCamera() {
     if ("zoom" in camera) {
       camera.zoom = zoom;
       camera.updateProjectionMatrix();
+      invalidate();
     }
-  }, [camera, zoom]);
+  }, [camera, invalidate, zoom]);
 
   return null;
 }
@@ -37,8 +38,9 @@ export function SceneRoot({
       <div className="pointer-events-none absolute left-1/2 top-1/2 z-0 h-[34vh] w-[min(78vw,920px)] -translate-x-1/2 -translate-y-[38%] rounded-[50%] bg-[radial-gradient(ellipse_at_center,rgba(103,232,249,0.2),rgba(14,116,144,0.11)_36%,transparent_72%)] blur-2xl" />
       <Canvas
         className="relative z-10 h-full w-full cursor-grab active:cursor-grabbing"
-        dpr={[1, 1.8]}
-        shadows
+        dpr={[1, 1.5]}
+        frameloop="demand"
+        shadows="basic"
         gl={{ antialias: true, alpha: true }}
         onPointerMissed={onSceneBackgroundClick}
       >
@@ -50,23 +52,20 @@ export function SceneRoot({
           castShadow
           intensity={3}
           position={[3.5, 4.5, 5]}
-          shadow-mapSize={[1024, 1024]}
+          shadow-mapSize={[512, 512]}
         />
         <pointLight intensity={1.8} position={[-3.8, 1.5, 3.6]} color="#4ee7ff" />
         <pointLight intensity={0.82} position={[3.2, -1.4, 4]} color="#2a87ff" />
-        <Float floatIntensity={0.16} rotationIntensity={0} speed={1.15}>
-          <Suspense fallback={<ACModelFallback />}>
-            <ACModel
-              onProjectedCalloutsChange={onProjectedCalloutsChange}
-            />
-          </Suspense>
-        </Float>
+        <Suspense fallback={<ACModelFallback />}>
+          <ACModel onProjectedCalloutsChange={onProjectedCalloutsChange} />
+        </Suspense>
         <ContactShadows
           position={[0, -1.25, 0]}
           opacity={0.28}
           scale={7}
           blur={2.7}
           far={2.4}
+          resolution={256}
           color="#0ea5c6"
         />
       </Canvas>
