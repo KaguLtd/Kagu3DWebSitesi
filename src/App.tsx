@@ -1,124 +1,185 @@
-import { lazy, Suspense, useEffect, useState } from "react";
-import { Mail, Phone } from "lucide-react";
-import { motion } from "framer-motion";
-import { MobileExperience } from "./components/mobile/MobileExperience";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
+import { Mail, MessageCircle, Phone } from "lucide-react";
+import { AcBlueprintHero } from "./components/AcBlueprintHero";
 import { CONTACT } from "./data/contact";
-import type { ProjectedCallout } from "./lib/projection";
+import { heroStages, type HeroStage } from "./data/heroStages";
 
-const SceneRoot = lazy(() =>
-  import("./components/SceneRoot").then((module) => ({
-    default: module.SceneRoot,
-  })),
-);
-
-const CalloutOverlay = lazy(() =>
-  import("./components/CalloutOverlay").then((module) => ({
-    default: module.CalloutOverlay,
-  })),
-);
+type FlowDirection = "forward" | "backward";
 
 function App() {
-  const [activeCalloutId, setActiveCalloutId] = useState<string | null>(null);
-  const [projectedCallouts, setProjectedCallouts] = useState<ProjectedCallout[]>(
+  const [activeStageIndex, setActiveStageIndex] = useState(0);
+  const [previousStageIndex, setPreviousStageIndex] = useState<number | null>(
+    null,
+  );
+  const [flowDirection, setFlowDirection] = useState<FlowDirection>("forward");
+  const activeStageIndexRef = useRef(0);
+  const transitionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleStageChange = useCallback((nextStageIndex: number) => {
+    const currentStageIndex = activeStageIndexRef.current;
+    if (nextStageIndex === currentStageIndex) return;
+
+    setPreviousStageIndex(currentStageIndex);
+    setFlowDirection(
+      nextStageIndex > currentStageIndex ? "forward" : "backward",
+    );
+    activeStageIndexRef.current = nextStageIndex;
+    setActiveStageIndex(nextStageIndex);
+
+    if (transitionTimerRef.current) {
+      clearTimeout(transitionTimerRef.current);
+    }
+    transitionTimerRef.current = setTimeout(() => {
+      setPreviousStageIndex(null);
+    }, 720);
+  }, []);
+
+  useEffect(
+    () => () => {
+      if (transitionTimerRef.current) {
+        clearTimeout(transitionTimerRef.current);
+      }
+    },
     [],
   );
-  const isMobile = useIsMobile();
+
+  const activeStage = heroStages[activeStageIndex];
+  const previousStage =
+    previousStageIndex === null ? null : heroStages[previousStageIndex];
 
   return (
-    <main className="relative h-dvh w-screen overflow-hidden bg-[#01040a] text-white">
-      <div className="pointer-events-none absolute inset-0 z-0 bg-[radial-gradient(circle_at_50%_42%,rgba(22,78,99,0.28),rgba(2,7,17,0.72)_34%,rgba(1,4,10,1)_72%)]" />
-      <div className="pointer-events-none absolute inset-0 z-0 bg-[radial-gradient(circle_at_18%_24%,rgba(34,211,238,0.14),transparent_32%),radial-gradient(circle_at_82%_18%,rgba(37,99,235,0.14),transparent_34%),radial-gradient(circle_at_50%_88%,rgba(14,165,233,0.18),transparent_30%)]" />
-      <div className="pointer-events-none absolute inset-0 z-0 opacity-[0.07] [background-image:linear-gradient(rgba(125,211,252,0.5)_1px,transparent_1px),linear-gradient(90deg,rgba(125,211,252,0.5)_1px,transparent_1px)] [background-size:54px_54px] [mask-image:radial-gradient(circle_at_center,black,transparent_74%)]" />
-      <div className="pointer-events-none absolute inset-x-[-10%] bottom-[-22%] z-0 h-[42%] bg-[radial-gradient(ellipse_at_center,rgba(56,189,248,0.28),rgba(14,116,144,0.08)_42%,transparent_72%)] blur-2xl" />
-      <div className="pointer-events-none absolute inset-0 z-0 bg-[radial-gradient(circle_at_center,transparent_48%,rgba(0,0,0,0.42)_100%)]" />
-      <header className="absolute left-0 right-0 top-0 z-20 flex items-start justify-between gap-3 px-3 py-3 sm:gap-4 sm:px-8 sm:py-5">
-        <motion.div
-          initial={{ opacity: 0, y: -8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, ease: "easeOut" }}
-          className="rounded-lg border border-white/16 bg-[linear-gradient(145deg,rgba(3,12,22,0.82),rgba(1,4,10,0.72))] px-3 py-2 shadow-[0_16px_44px_rgba(0,0,0,0.34),0_0_30px_rgba(34,211,238,0.06)] backdrop-blur-xl transition hover:border-[#c36a1a]/45 sm:px-5 sm:py-4"
-        >
-          <div className="whitespace-nowrap font-horizon text-[17px] font-bold uppercase leading-none tracking-[0.06em] text-[#c36a1a] drop-shadow-[0_0_10px_rgba(195,106,26,0.16)] sm:text-[34px] sm:tracking-[0.08em]">
-            KAGU LTD.
-          </div>
-        </motion.div>
+    <main className="app-shell">
+      <div className="ambient ambient-one" />
+      <div className="ambient ambient-two" />
+      <div className="blueprint-grid" />
+      <div className="vignette" />
 
-        <motion.div
-          initial={{ opacity: 0, y: -8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.08, ease: "easeOut" }}
-          className="flex max-w-[52vw] flex-wrap justify-end gap-2"
-        >
-          <a
-            href={CONTACT.phoneHref}
-            className="inline-flex h-11 items-center gap-2 rounded-lg border border-white/16 bg-[linear-gradient(145deg,rgba(3,12,22,0.82),rgba(1,4,10,0.72))] px-3.5 text-xs font-medium text-[#c36a1a] shadow-[0_14px_36px_rgba(0,0,0,0.3),0_0_24px_rgba(34,211,238,0.05)] backdrop-blur-xl transition hover:border-[#c36a1a]/45"
-          >
-            <Phone className="h-4 w-4 text-[#c36a1a]" aria-hidden="true" />
-            <span className="hidden sm:inline">{CONTACT.phoneDisplay}</span>
+      <header className="site-header">
+        <a className="brand-mark" href="#" aria-label="Kagu Ltd. ana sayfa">
+          <span className="brand-word">KAGU</span>
+          <span className="brand-suffix">LTD.</span>
+        </a>
+
+        <nav className="header-actions" aria-label="İletişim bağlantıları">
+          <a className="header-link" href={CONTACT.phoneHref}>
+            <Phone aria-hidden="true" />
+            <span>{CONTACT.phoneDisplay}</span>
           </a>
-          <a
-            href={`mailto:${CONTACT.email}?cc=kagultdcy@gmail.com`}
-            className="inline-flex h-11 items-center gap-2 rounded-lg border border-white/16 bg-[linear-gradient(145deg,rgba(3,12,22,0.82),rgba(1,4,10,0.72))] px-3.5 text-xs font-medium text-[#c36a1a] shadow-[0_14px_36px_rgba(0,0,0,0.3),0_0_24px_rgba(34,211,238,0.05)] backdrop-blur-xl transition hover:border-[#c36a1a]/45"
-          >
-            <Mail className="h-4 w-4 text-[#c36a1a]" aria-hidden="true" />
-            <span className="hidden md:inline">{CONTACT.email}</span>
+          <a className="header-link mail-link" href={`mailto:${CONTACT.email}`}>
+            <Mail aria-hidden="true" />
+            <span>{CONTACT.email}</span>
           </a>
-        </motion.div>
+        </nav>
       </header>
 
-      {isMobile ? (
-        <MobileExperience
-          activeCalloutId={activeCalloutId}
-          onActiveCalloutChange={setActiveCalloutId}
-        />
-      ) : (
-        <>
-          <section className="absolute inset-0 z-10 flex items-center justify-center overflow-hidden px-4">
-            <Suspense fallback={<DesktopSceneFallback />}>
-              <SceneRoot
-                onProjectedCalloutsChange={setProjectedCallouts}
-                onSceneBackgroundClick={() => setActiveCalloutId(null)}
+      <section className="hero-layout" aria-labelledby="hero-title">
+        <div className="hero-copy">
+          <div className="hero-copy-stage-stack">
+            {previousStage ? (
+              <StageCopy
+                stage={previousStage}
+                stageIndex={previousStageIndex!}
+                state="exiting"
+                direction={flowDirection}
+                aria-hidden="true"
               />
-            </Suspense>
-          </section>
-          <Suspense fallback={null}>
-            <CalloutOverlay
-              activeCalloutId={activeCalloutId}
-              onActiveCalloutChange={setActiveCalloutId}
-              projectedCallouts={projectedCallouts}
+            ) : null}
+            <StageCopy
+              key={activeStage.id}
+              stage={activeStage}
+              stageIndex={activeStageIndex}
+              state="entering"
+              direction={flowDirection}
             />
-          </Suspense>
-        </>
-      )}
+          </div>
+
+          <div className="hero-actions">
+            <a
+              className="primary-action"
+              href={CONTACT.whatsappUrl}
+              rel="noreferrer"
+              target="_blank"
+            >
+              <MessageCircle aria-hidden="true" />
+              Teklif alın
+            </a>
+            <a className="secondary-action" href={CONTACT.phoneHref}>
+              Projenizi konuşalım
+              <span aria-hidden="true">↗</span>
+            </a>
+          </div>
+          <div className="capabilities" aria-label="Hizmet özellikleri">
+            <span>KEŞİF</span>
+            <i />
+            <span>PROJELENDİRME</span>
+            <i />
+            <span>UYGULAMA</span>
+            <i />
+            <span>SERVİS</span>
+          </div>
+        </div>
+
+        <AcBlueprintHero onStageChange={handleStageChange} />
+      </section>
     </main>
   );
 }
 
-export default App;
+type StageCopyProps = {
+  stage: HeroStage;
+  stageIndex: number;
+  state: "entering" | "exiting";
+  direction: FlowDirection;
+  "aria-hidden"?: "true";
+};
 
-function useIsMobile() {
-  const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
+function StageCopy({
+  stage,
+  stageIndex,
+  state,
+  direction,
+  ...ariaProps
+}: StageCopyProps) {
+  const topic = getStageTopic(stage.eyebrow);
 
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-
-    window.addEventListener("resize", handleResize);
-
-    return () => {
-      window.removeEventListener("resize", handleResize);
-    };
-  }, []);
-
-  return isMobile;
-}
-
-function DesktopSceneFallback() {
   return (
     <div
-      className="h-32 w-[min(72vw,760px)] animate-pulse rounded-[32px] border border-cyan-200/10 bg-cyan-300/[0.035] shadow-[0_0_80px_rgba(34,211,238,0.08)]"
-      aria-label="3D klima deneyimi yükleniyor"
-    />
+      className={`hero-copy-content is-${state} is-${direction}`}
+      {...ariaProps}
+    >
+      <span className="stage-ghost" aria-hidden="true">
+        0{stageIndex + 1}
+      </span>
+      <div className="stage-heading">
+        <span className="stage-order">0{stageIndex + 1} / 08</span>
+        <h1 id={state === "entering" ? "hero-title" : undefined} className="stage-title">
+          {topic}
+        </h1>
+      </div>
+      <p className="hero-tagline">
+        <span>{stage.lead}</span>
+        <em>{stage.accent}</em>
+        <span>{stage.tail}</span>
+      </p>
+      <p
+        className={`hero-description ${
+          stage.description.length > 330 ? "is-long" : ""
+        }`}
+      >
+        {stage.description}
+      </p>
+    </div>
   );
 }
+
+function getStageTopic(eyebrow: string) {
+  const separatorIndex = eyebrow.indexOf(" / ");
+  return separatorIndex === -1 ? eyebrow : eyebrow.slice(separatorIndex + 3);
+}
+
+export default App;
