@@ -16,6 +16,16 @@ const CHAPTERS = [
   { at: 90, label: "Hakkımızda" },
 ];
 
+const getNearestChapterIndex = (value: number) =>
+  CHAPTERS.reduce((nearestIndex, chapter, index) => {
+    const currentDistance = Math.abs(
+      value - CHAPTERS[nearestIndex].at / 100,
+    );
+    const nextDistance = Math.abs(value - chapter.at / 100);
+
+    return nextDistance < currentDistance ? index : nearestIndex;
+  }, 0);
+
 type AcBlueprintHeroProps = {
   onStageChange?: (stageIndex: number) => void;
 };
@@ -25,8 +35,14 @@ export function AcBlueprintHero({ onStageChange }: AcBlueprintHeroProps) {
   const timelineRef = useRef<ReturnType<typeof createTimeline> | null>(null);
   const progressRef = useRef({ current: 0, target: 0 });
   const pointerRef = useRef({ currentX: 0, currentY: 0, x: 0, y: 0 });
-  const touchYRef = useRef<number | null>(null);
+  const touchStartYRef = useRef<number | null>(null);
+  const touchDeltaYRef = useRef(0);
   const [progress, setProgress] = useState(0);
+
+  const goToChapter = (index: number) => {
+    const safeIndex = Math.max(0, Math.min(CHAPTERS.length - 1, index));
+    progressRef.current.target = CHAPTERS[safeIndex].at / 100;
+  };
 
   useEffect(() => {
     const root = rootRef.current;
@@ -256,17 +272,37 @@ export function AcBlueprintHero({ onStageChange }: AcBlueprintHeroProps) {
     };
 
     const onTouchStart = (event: TouchEvent) => {
-      touchYRef.current = event.touches[0]?.clientY ?? null;
+      if (!mobile || reducedMotion) return;
+
+      touchStartYRef.current = event.touches[0]?.clientY ?? null;
+      touchDeltaYRef.current = 0;
     };
 
     const onTouchMove = (event: TouchEvent) => {
-      if (touchYRef.current === null || reducedMotion) return;
-      const nextY = event.touches[0]?.clientY ?? touchYRef.current;
-      const delta = touchYRef.current - nextY;
-      touchYRef.current = nextY;
-      progressRef.current.target = clamp(
-        progressRef.current.target + delta * 0.0038,
-      );
+      if (!mobile || reducedMotion || touchStartYRef.current === null) return;
+
+      const currentY =
+        event.touches[0]?.clientY ?? touchStartYRef.current;
+      touchDeltaYRef.current = touchStartYRef.current - currentY;
+    };
+
+    const onTouchEnd = () => {
+      if (!mobile || reducedMotion || touchStartYRef.current === null) return;
+
+      const delta = touchDeltaYRef.current;
+      const swipeThreshold = 50;
+
+      if (Math.abs(delta) >= swipeThreshold) {
+        const currentIndex = getNearestChapterIndex(
+          progressRef.current.target,
+        );
+        const direction = delta > 0 ? 1 : -1;
+
+        goToChapter(currentIndex + direction);
+      }
+
+      touchStartYRef.current = null;
+      touchDeltaYRef.current = 0;
     };
 
     const onPointerMove = (event: PointerEvent) => {
@@ -292,6 +328,7 @@ export function AcBlueprintHero({ onStageChange }: AcBlueprintHeroProps) {
     window.addEventListener("wheel", onWheel, { passive: false });
     root.addEventListener("touchstart", onTouchStart, { passive: true });
     root.addEventListener("touchmove", onTouchMove, { passive: true });
+    root.addEventListener("touchend", onTouchEnd, { passive: true });
     root.addEventListener("pointermove", onPointerMove);
     root.addEventListener("pointerleave", onPointerLeave);
 
@@ -346,6 +383,7 @@ export function AcBlueprintHero({ onStageChange }: AcBlueprintHeroProps) {
       window.removeEventListener("wheel", onWheel);
       root.removeEventListener("touchstart", onTouchStart);
       root.removeEventListener("touchmove", onTouchMove);
+      root.removeEventListener("touchend", onTouchEnd);
       root.removeEventListener("pointermove", onPointerMove);
       root.removeEventListener("pointerleave", onPointerLeave);
       intro.revert();
@@ -369,7 +407,7 @@ export function AcBlueprintHero({ onStageChange }: AcBlueprintHeroProps) {
     const isFinalStage = chapterIndex === CHAPTERS.length - 1;
     progressRef.current.target = isFinalStage
       ? 0
-      : (CHAPTERS[chapterIndex + 1].at + 1) / 100;
+      : CHAPTERS[chapterIndex + 1].at / 100;
   };
 
   return (

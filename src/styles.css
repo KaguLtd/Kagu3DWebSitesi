@@ -175,6 +175,10 @@ button {
   background: rgba(20, 47, 60, 0.65);
 }
 
+.whatsapp-link {
+  display: none;
+}
+
 .hero-layout {
   position: relative;
   z-index: 10;
@@ -1102,6 +1106,7 @@ button {
   .header-link { min-height: 38px; padding: 0 11px; }
   .header-link span { display: none; }
   .mail-link { display: none; }
+  .whatsapp-link { display: inline-flex; }
 
   .hero-layout {
     display: flex;
@@ -1176,6 +1181,7 @@ button {
     flex: 1 1 auto;
     width: 100%;
     min-height: 0;
+    overflow: hidden;
   }
 
   .technical-index {
@@ -1192,10 +1198,10 @@ button {
   }
 
   .ac-perspective-wrap {
-    inset: -9% -18% 5%;
+    inset: 0 0 11%;
   }
 
-  .ac-perspective { width: min(128%, 720px); }
+  .ac-perspective { width: min(92vw, 520px); }
   .blueprint-marks { display: none; }
   .assembly-indexes { display: none; }
 
@@ -1225,7 +1231,8 @@ button {
   .hero-description { display: none; }
   .hero-actions { margin-top: 11px; }
   .secondary-action { display: none; }
-  .ac-perspective-wrap { inset-block: -13% 4%; }
+  .ac-perspective-wrap { inset: -1% 0 14%; }
+  .ac-perspective { width: min(86vw, 430px); }
   .callout-3, .callout-4 { bottom: 17%; }
 }
 
